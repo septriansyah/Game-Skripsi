@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isTeacher() { return signedIn() && request.auth.token.firebase.sign_in_provider == 'password'; }
+    function ownsClass(code) { return isTeacher() && get(/databases/$(database)/documents/classes/$(code)).data.teacherUid == request.auth.uid; }
+
+    // Profil guru
+    match /teachers/{uid} {
+      allow read, write: if isTeacher() && request.auth.uid == uid;
+    }
+
+    // Kelas: siswa (login anonim) boleh membaca untuk validasi kode & fase yang dibuka
+    match /classes/{code} {
+      allow read: if signedIn();
+      allow create: if isTeacher() && request.resource.data.teacherUid == request.auth.uid;
+      allow update, delete: if isTeacher() && resource.data.teacherUid == request.auth.uid;
+
+      // Kelompok siswa: dibuat & diperbarui oleh akun anonim pemiliknya
+      match /groups/{gid} {
+        allow read: if ownsClass(code) || (signedIn() && (resource == null || resource.data.uid == request.auth.uid));
+        allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+        allow update: if ownsClass(code)
+                      || (signedIn() && resource.data.uid == request.auth.uid
+                          && request.resource.data.uid == resource.data.uid
+                          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['grading']));
+        allow delete: if ownsClass(code);
+
+        // Log aktivitas (kueri, galat, petunjuk) untuk analitik guru
+        match /events/{eid} {
+          allow read: if ownsClass(code);
+          allow create: if signedIn() && get(/databases/$(database)/documents/classes/$(code)/groups/$(gid)).data.uid == request.auth.uid;
+        }
+      }
+    }
+  }
+}
