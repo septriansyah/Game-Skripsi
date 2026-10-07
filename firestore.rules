@@ -34,5 +34,26 @@ service cloud.firestore {
         }
       }
     }
+
+    // ===== Ngulik! (proyek ngulik-react memakai project Firebase yang sama) =====
+
+    // Progres lengkap: hanya pemilik akun yang bisa membaca dan menulis.
+    match /users/{uid} {
+      allow read: if request.auth != null && (request.auth.uid == uid || request.auth.uid == 'nDRmRplyVRUW1gobJlNHEZEpfUW2'); // uid kedua = admin /office
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Papan peringkat: semua pengguna yang login bisa membaca,
+    // tapi setiap orang hanya boleh menulis barisnya sendiri.
+    match /leaderboard/{uid} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.xp is int
+        && request.resource.data.xp >= 0
+        && request.resource.data.streak is int
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 60;
+    }
   }
 }
