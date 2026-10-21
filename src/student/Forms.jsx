@@ -4,8 +4,10 @@ import { Lup } from '../components/Art';
 import { Modal } from '../components/ui';
 import { KEY_A1, BADGES, REFLECT_STEPS } from '../game/data';
 import { useGame } from './GameContext';
+import Recap3 from './Recap';
 
 const ok3 = (v) => String(v || '').trim().length >= 3;
+const A5_STARTERS = ['Pertama, INSERT dijalankan lebih dulu karena …', 'UPDATE dan DELETE memakai WHERE id agar …, seperti terbukti di Kueri A yang hanya mengubah 1 baris.', 'SELECT ditaruh paling akhir untuk …'];
 
 function Shell({ chip, chipColor = '#DB4F93', title, head, text, face = 'netral', onExit, onBook, children }) {
   return (
@@ -109,13 +111,17 @@ export function FormA5({ nav }) {
     complete('fin', 0); sound('ok'); setDone(true);
   };
   return (
-    <Shell {...nav} chip="Fase 4" chipColor="var(--blood)" title="Menyusun & menyajikan solusi" head="Aktivitas 5 · Solusi terpadu" text="Rangkaian kuerimu berhasil di database asli. Lengkapi alasan urutannya untuk bahan presentasi." face="menang">
+    <Shell {...nav} chip="Fase 4" chipColor="var(--blood)" title="Menyusun & menyajikan solusi" head="Aktivitas 5 · Solusi terpadu" text="Rangkaian kuerimu berhasil di database asli. Lengkapi alasan urutannya untuk bahan presentasi. Pakai rekap Fase 3 di bawah sebagai bahan alasan dan kesimpulan." face="menang">
+      <Recap3 />
       <div className="lk-wrap"><table className="lk"><tbody>
         <tr><th>Urutan</th><th>Kueri yang disusun</th><th>Alasan penempatan urutannya</th></tr>
         {a5.seq.map((q, i) => <tr key={i}><td className="no">{i + 1}</td><td><code>{q.sql}</code></td><td><TA aria-label={`Alasan urutan ${i + 1}`} value={a5.why[i]} miss={tried && !ok3(a5.why[i])} onChange={(v) => update((d) => { d.lk.a5.why[i] = v; })} /></td></tr>)}
       </tbody></table></div>
       <div className="q"><b>a. Hasil kueri verifikasi terakhir (daftar produk kategori Elektronik):</b><textarea className="ta" readOnly rows={6} value={a5.verif} /></div>
-      <div className="q"><b>b. Dua alasan yang akan kelompokmu sampaikan saat presentasi, mengapa urutan ini sudah tepat:</b><TA rows={3} value={a5.b} miss={tried && !ok3(a5.b)} onChange={(v) => update((d) => { d.lk.a5.b = v; })} /></div>
+      <div className="q"><b>b. Dua alasan yang akan kelompokmu sampaikan saat presentasi, mengapa urutan ini sudah tepat:</b>
+        <span className="muted" style={{ fontSize: 13, fontWeight: 700 }}>Ketuk kalimat pembuka kalau bingung, lalu lengkapi dengan bukti dari rekap Fase 3:</span>
+        <div className="starter">{A5_STARTERS.map((x) => <button key={x} type="button" onClick={() => update((d) => { const t = d.lk.a5.b || ''; d.lk.a5.b = t + (t && !/\s$/.test(t) ? ' ' : '') + x; })}>{x}</button>)}</div>
+        <TA rows={3} value={a5.b} miss={tried && !ok3(a5.b)} onChange={(v) => update((d) => { d.lk.a5.b = v; })} /></div>
       <div className="q"><b>Poin diperoleh & lencana</b>
         <div className="pe"><div><b>{g.xp}</b><span>Poin (XP)</span></div><div><b>{g.badges.length}</b><span>Lencana</span></div>
           {g.badges.map((id) => { const b = BADGES.find((x) => x.id === id); return b && <div key={id} style={{ background: b.c, color: '#fff' }}><b style={{ fontSize: 16 }}>{b.name}</b><span style={{ color: '#fff', opacity: 0.85 }}>lencana</span></div>; })}

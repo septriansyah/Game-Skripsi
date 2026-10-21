@@ -5,6 +5,7 @@ import { Lup, Avatar } from '../components/Art';
 import { Galat, Modal, WDialog, FloatWin } from '../components/ui';
 import { Done } from './Forms';
 import { useGame } from './GameContext';
+import Recap3 from './Recap';
 
 const ok3 = (v) => String(v || '').trim().length >= 3;
 const hl = (s) => s.split(/(\bSELECT\b|\bFROM\b|\bWHERE\b|\bAND\b|\bINSERT INTO\b|\bVALUES\b|\bUPDATE\b|\bSET\b|\bDELETE FROM\b|'[^']*'|___)/g)
@@ -234,6 +235,7 @@ export default function Mission({ id, nav }) {
 
         <div className="bench">
           <div className="mission"><Lup mood={solved ? 'senang' : 'netral'} className="lupi" /><div><b>{m.title}</b><p>{m.text}</p></div></div>
+          {isFin && <Recap3 open={!solved} onUse={(st) => { if (solved) return; setStack(clone(st)); setLastAdd(-1); setHint(null); sound('pop'); }} />}
 
           {isA4 && (
             <div className="sheet">
@@ -444,6 +446,10 @@ function CauseDialog({ state, setState, onDone }) {
         else { sound('err'); update((d) => { d.life = Math.max(0, d.life - 1); d.stats.wrong++; d.stats.errors['Penyebab insiden keliru'] = (d.stats.errors['Penyebab insiden keliru'] || 0) + 1; }, true); setState({ step: 'wrong', pick: state.pick }); }
       }}>Kirim laporan</button></>}>
       <div className="wmsg"><Lup className="big" /><div><h4>Apa penyebab harga kacau?</h4><p>Pilih berdasarkan bukti dari Aktivitas 4. Salah pilih memotong 1 sidik jari.</p></div></div>
+      <div className="evmini"><b>Bukti dari Fase 3 (Aktivitas 4)</b><br />
+        Kueri A <code>UPDATE produk SET harga = 9000000 WHERE id = 3;</code> mengubah <b>{g.lk.a4.A?.aff ?? '–'} baris</b>.<br />
+        Kueri B <code>UPDATE produk SET harga = 9000000;</code> (tanpa WHERE) mengubah <b>{g.lk.a4.B?.aff ?? '–'} baris</b>, sama seperti insiden di memo: semua harga jadi Rp9.000.000.
+        {ok3(g.lk.a4.a) && <><br />Kesimpulan kelompokmu: <i>{g.lk.a4.a}</i></>}</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }} role="radiogroup">
         {CAUSES.map(([k, t]) => <button key={k} type="button" className="sus" role="radio" aria-checked={state.pick === k} style={{ gridTemplateColumns: '1fr' }} onClick={() => setState({ ...state, pick: k })}><div><b>{t}</b></div></button>)}
       </div>
