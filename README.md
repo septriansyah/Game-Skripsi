@@ -63,6 +63,14 @@ Aturan di `firestore.rules`:
 - Siswa (akun anonim) hanya bisa membaca dan menulis dokumen kelompoknya sendiri, dan tidak bisa mengubah `grading`.
 - Guru (akun email) hanya bisa mengelola kelas miliknya.
 
+## Admin
+
+Halaman admin tidak ditautkan dari mana pun. Buka langsung `…/#/admin`, lalu masuk dengan akun admin Ngulik
+(`admin@ngulik.app`, UID `nDRmRplyVRUW1gobJlNHEZEpfUW2`, tercatat di `src/lib/db.js` dan `firestore.rules`).
+Admin melihat semua guru, semua kode kelas, dan semua kelompok, dan bisa membuka kelas mana pun seperti guru pemiliknya.
+`firestore.rules` dipakai bersama proyek ngulik-react, jadi jaga isinya tetap sama di kedua proyek.
+Di mode demo, kata sandi admin `admin123`.
+
 ## Nilai
 
 - **Aktivitas 1–6:** diisi guru (0–100).

@@ -16,7 +16,7 @@ function Bars({ rows, color = '#3B6FE0', max, suffix = '' }) {
     </div>))}</div>;
 }
 
-export default function ClassView() {
+export default function ClassView({ base = '/guru', backLabel = 'Kelas saya' }) {
   const { code } = useParams(); const nav = useNavigate();
   const [cls, setCls] = useState(undefined); const [groups, setGroups] = useState([]);
   const [proj, setProj] = useState(false); const [, tick] = useState(0);
@@ -40,14 +40,14 @@ export default function ClassView() {
   }, [groups]);
 
   if (cls === undefined) return <Lup size={60} />;
-  if (cls === null) return <p>Kelas tidak ditemukan. <Link to="/guru">Kembali</Link></p>;
+  if (cls === null) return <p>Kelas tidak ditemukan. <Link to={base}>Kembali</Link></p>;
   const exportCSV = () => { const b = new Blob([toCSV(cls, groups)], { type: 'text/csv;charset=utf-8' }); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `Nilai-Kasus2-${cls.name.replace(/[^\w-]+/g, '_')}.csv`; document.body.appendChild(a); a.click(); a.remove(); };
   const sorted = [...groups].sort((a, b) => pct(b) - pct(a) || (a.name || '').localeCompare(b.name || ''));
 
   return (
     <>
       <div className="dash-head">
-        <div><Link to="/guru" className="muted" style={{ fontWeight: 800, fontSize: 14 }}>← Kelas saya</Link><span className="label" style={{ display: 'block', marginTop: 6 }}>Kasus 2 · Harga Kacau di Gerai Kopdes</span><h2>{cls.name}</h2></div>
+        <div><Link to={base} className="muted" style={{ fontWeight: 800, fontSize: 14 }}>← {backLabel}</Link><span className="label" style={{ display: 'block', marginTop: 6 }}>Kasus 2 · Harga Kacau di Gerai Kopdes</span><h2>{cls.name}</h2></div>
         <div className="row"><div className="code-big" aria-label="Kode kelas">{cls.code}</div><button className="btn ghost sm" type="button" onClick={() => setProj(true)}>Tampilkan di proyektor</button><button className="btn sm" type="button" onClick={exportCSV} disabled={!groups.length}>Unduh nilai (CSV)</button></div>
       </div>
 
@@ -85,7 +85,7 @@ export default function ClassView() {
         {groups.length === 0 ? <p className="muted" style={{ fontWeight: 700 }}>Belum ada kelompok. Minta siswa membuka menu "Saya siswa" lalu memasukkan kode <b>{cls.code}</b>.</p> : (
           <div className="lk-wrap"><table className="gtable"><thead><tr><th>Kelompok</th><th>Langkah</th><th>Progres</th><th style={{ textAlign: 'right' }}>XP</th><th style={{ textAlign: 'right' }}>Sidik jari</th><th style={{ textAlign: 'right' }}>Salah</th><th style={{ textAlign: 'right' }}>Nilai</th><th>Aktivitas</th></tr></thead>
             <tbody>{sorted.map((g) => (
-              <tr key={g.id} className="click" onClick={() => nav(`/guru/${code}/${g.id}`)} tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && nav(`/guru/${code}/${g.id}`)}>
+              <tr key={g.id} className="click" onClick={() => nav(`${base}/${code}/${g.id}`)} tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && nav(`${base}/${code}/${g.id}`)}>
                 <td><b>{g.name}</b><div className="muted" style={{ fontSize: 12.5, fontWeight: 700 }}>{g.members || '–'}</div></td>
                 <td style={{ fontWeight: 700, fontSize: 13.5 }}>{currentLabel(g)}</td>
                 <td><div className="steps9" title={`${(g.done || []).length}/9 langkah`}>{NODES.map((n) => <i key={n.id} className={(g.done || []).includes(n.id) ? 'd' : g.current === n.id ? 'c' : ''} />)}</div></td>

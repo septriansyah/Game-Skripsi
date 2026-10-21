@@ -146,3 +146,42 @@ export async function studentResume() {
   }
   return s;
 }
+
+/* ---------------- ADMIN ---------------- */
+// Akun admin sama dengan halaman /office di Ngulik (project Firebase yang sama). UID ini juga ada di firestore.rules.
+export const ADMIN_UID = 'nDRmRplyVRUW1gobJlNHEZEpfUW2';
+export const ADMIN_EMAIL = 'admin@ngulik.app';
+const DEMO_ADMIN = { uid: 'admin', name: 'Admin', email: ADMIN_EMAIL };
+const demoAdmin = () => { try { return localStorage.getItem('kq2-demo-admin') ? DEMO_ADMIN : null; } catch { return null; } };
+
+export function onAdmin(cb) {
+  if (hasFirebase) return fbAuth.onAuthStateChanged(auth, (u) => cb(u && u.uid === ADMIN_UID ? { uid: u.uid, name: u.displayName || u.email, email: u.email } : null));
+  return sub(() => cb(demoAdmin()));
+}
+export async function adminSignIn(email, pw) {
+  if (hasFirebase) {
+    if (auth.currentUser) await fbAuth.signOut(auth);
+    const c = await fbAuth.signInWithEmailAndPassword(auth, email, pw);
+    if (c.user.uid !== ADMIN_UID) { await fbAuth.signOut(auth); throw new Error('Akun ini bukan akun admin.'); }
+    return;
+  }
+  if (email !== ADMIN_EMAIL || pw !== 'admin123') throw new Error('Email atau kata sandi salah.');
+  localStorage.setItem('kq2-demo-admin', '1'); store(load());
+}
+export async function adminSignOut() {
+  if (hasFirebase) return fbAuth.signOut(auth);
+  localStorage.removeItem('kq2-demo-admin'); store(load());
+}
+export function watchAllClasses(cb) {
+  if (hasFirebase) return F.onSnapshot(F.collection(fs, 'classes'), (s) => cb(s.docs.map((d) => d.data()).sort(byCreated)), () => cb([]));
+  return sub(() => cb(Object.values(load().classes).sort(byCreated)));
+}
+export function watchAllTeachers(cb) {
+  if (hasFirebase) return F.onSnapshot(F.collection(fs, 'teachers'), (s) => cb(s.docs.map((d) => ({ uid: d.id, ...d.data() })).sort(byCreated)), () => cb([]));
+  return sub(() => cb(Object.values(load().teachers).map(({ pw, ...t }) => t).sort(byCreated)));
+}
+// Semua kelompok dari semua kelas (collection group "groups").
+export function watchAllGroups(cb) {
+  if (hasFirebase) return F.onSnapshot(F.collectionGroup(fs, 'groups'), (s) => cb(s.docs.map((d) => ({ id: d.id, ...dec(d.data()), classCode: d.ref.parent.parent.id }))), () => cb([]));
+  return sub(() => cb(Object.entries(load().groups).flatMap(([code, gs]) => Object.entries(gs).map(([id, g]) => ({ id, ...g, classCode: code })))));
+}

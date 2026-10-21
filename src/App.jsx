@@ -5,6 +5,7 @@ import { ToastProvider } from './components/ui';
 import { MODE } from './lib/db';
 import Student from './student/Student';
 import Teacher from './teacher/Teacher';
+import Admin from './admin/Admin';
 
 function Landing() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/main" element={<Student />} />
           <Route path="/guru/*" element={<Teacher />} />
+          <Route path="/admin/*" element={<Admin />} />
         </Routes>
       </HashRouter>
     </ToastProvider>

@@ -8,24 +8,24 @@ import { ACT_KEYS, autoMisi, finalScore, pct, currentLabel, ago } from './stats'
 
 const KIND = { run: ['Jalankan', 'ok'], wrong: ['Salah', 'bad'], galat: ['Galat', 'gal'], complete: ['Selesai', 'ok'], hint: ['Lihat jawaban', 'gal'], warn: ['Abaikan peringatan', 'bad'], cause: ['Laporan', 'ok'] };
 
-export default function GroupDetail() {
+export default function GroupDetail({ base = '/guru' }) {
   const { code, gid } = useParams(); const nav = useNavigate();
   const [g, setG] = useState(undefined); const [ev, setEv] = useState([]); const [tab, setTab] = useState('lkpd');
   const [gr, setGr] = useState(null); const [saved, setSaved] = useState(false); const [sure, setSure] = useState('');
   useEffect(() => watchGroup(code, gid, (x) => { setG(x); setGr((cur) => cur || { ...(x?.grading || {}) }); }), [code, gid]);
   useEffect(() => watchEvents(code, gid, setEv), [code, gid]);
   if (g === undefined) return <Lup size={60} />;
-  if (!g) return <p>Kelompok tidak ditemukan. <Link to={'/guru/' + code}>Kembali</Link></p>;
+  if (!g) return <p>Kelompok tidak ditemukan. <Link to={base + '/' + code}>Kembali</Link></p>;
   const full = { ...freshGroup(), ...g, lk: { ...freshGroup().lk, ...(g.lk || {}) } };
   const save = async () => { await patchGroup(code, gid, { grading: gr }); setSaved(true); setTimeout(() => setSaved(false), 1800); };
   const reset = async () => { if (sure !== 'reset') { setSure('reset'); return; } await patchGroup(code, gid, { ...freshGroup(), grading: {}, resetAt: Date.now(), updatedAt: Date.now() }); setSure(''); setGr({}); };
-  const remove = async () => { if (sure !== 'del') { setSure('del'); return; } await deleteGroup(code, gid); nav('/guru/' + code); };
+  const remove = async () => { if (sure !== 'del') { setSure('del'); return; } await deleteGroup(code, gid); nav(base + '/' + code); };
   const fs = finalScore({ ...full, grading: gr });
 
   return (
     <>
       <div className="dash-head">
-        <div><Link to={'/guru/' + code} className="muted" style={{ fontWeight: 800, fontSize: 14 }}>← Kembali ke kelas</Link>
+        <div><Link to={base + '/' + code} className="muted" style={{ fontWeight: 800, fontSize: 14 }}>← Kembali ke kelas</Link>
           <span className="label" style={{ display: 'block', marginTop: 6 }}>{currentLabel(full)} · aktif {ago(g.updatedAt)}</span><h2>{g.name}</h2>
           <span className="muted" style={{ fontWeight: 700 }}>{g.members || '–'}</span></div>
         <div className="pe"><div><b>{pct(full)}%</b><span>Progres</span></div><div><b>{full.xp}</b><span>XP</span></div><div><b>{full.stats?.wrong || 0}</b><span>Salah</span></div><div><b>{fs ?? '–'}</b><span>Nilai akhir</span></div></div>

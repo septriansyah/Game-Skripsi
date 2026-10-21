@@ -4,18 +4,20 @@ service cloud.firestore {
 
     function signedIn() { return request.auth != null; }
     function isTeacher() { return signedIn() && request.auth.token.firebase.sign_in_provider == 'password'; }
-    function ownsClass(code) { return isTeacher() && get(/databases/$(database)/documents/classes/$(code)).data.teacherUid == request.auth.uid; }
+    function isAdmin() { return signedIn() && request.auth.uid == 'nDRmRplyVRUW1gobJlNHEZEpfUW2'; } // admin /office (Ngulik) & #/admin (KasusQL)
+    function ownsClass(code) { return isAdmin() || (isTeacher() && get(/databases/$(database)/documents/classes/$(code)).data.teacherUid == request.auth.uid); }
 
     // Profil guru
     match /teachers/{uid} {
       allow read, write: if isTeacher() && request.auth.uid == uid;
+      allow read: if isAdmin();
     }
 
     // Kelas: siswa (login anonim) boleh membaca untuk validasi kode & fase yang dibuka
     match /classes/{code} {
       allow read: if signedIn();
       allow create: if isTeacher() && request.resource.data.teacherUid == request.auth.uid;
-      allow update, delete: if isTeacher() && resource.data.teacherUid == request.auth.uid;
+      allow update, delete: if isAdmin() || (isTeacher() && resource.data.teacherUid == request.auth.uid);
 
       // Kelompok siswa: dibuat & diperbarui oleh akun anonim pemiliknya
       match /groups/{gid} {
@@ -33,6 +35,11 @@ service cloud.firestore {
           allow create: if signedIn() && get(/databases/$(database)/documents/classes/$(code)/groups/$(gid)).data.uid == request.auth.uid;
         }
       }
+    }
+
+    // Admin: baca semua kelompok dari semua kelas sekaligus (collection group query)
+    match /{path=**}/groups/{gid} {
+      allow read: if isAdmin();
     }
 
     // ===== Ngulik! (proyek ngulik-react memakai project Firebase yang sama) =====
