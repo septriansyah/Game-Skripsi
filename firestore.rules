@@ -4,7 +4,7 @@ service cloud.firestore {
 
     function signedIn() { return request.auth != null; }
     function isTeacher() { return signedIn() && request.auth.token.firebase.sign_in_provider == 'password'; }
-    function isAdmin() { return isTeacher() && request.auth.token.email == 'admin@ngulik.app'; } // admin /office (Ngulik) & #/admin (KasusQL)
+    function isAdmin() { return isTeacher() && request.auth.token.email in ['admin@kasusql.app', 'admin@ngulik.app']; } // admin #/admin (KasusQL) & /office (Ngulik)
     function ownsClass(code) { return isAdmin() || (isTeacher() && get(/databases/$(database)/documents/classes/$(code)).data.teacherUid == request.auth.uid); }
 
     // Profil guru

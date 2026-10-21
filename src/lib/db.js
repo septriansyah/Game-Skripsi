@@ -148,23 +148,24 @@ export async function studentResume() {
 }
 
 /* ---------------- ADMIN ---------------- */
-// Akun admin sama dengan halaman /office di Ngulik (project Firebase yang sama). Email ini juga ada di firestore.rules.
-export const ADMIN_EMAIL = 'admin@ngulik.app';
+// Email admin (juga tercatat di firestore.rules). admin@ngulik.app = admin /office Ngulik, project Firebase yang sama.
+export const ADMIN_EMAILS = ['admin@kasusql.app', 'admin@ngulik.app'];
+export const ADMIN_EMAIL = ADMIN_EMAILS[0];
 const DEMO_ADMIN = { uid: 'admin', name: 'Admin', email: ADMIN_EMAIL };
 const demoAdmin = () => { try { return localStorage.getItem('kq2-demo-admin') ? DEMO_ADMIN : null; } catch { return null; } };
 
 export function onAdmin(cb) {
-  if (hasFirebase) return fbAuth.onAuthStateChanged(auth, (u) => cb(u && u.email === ADMIN_EMAIL ? { uid: u.uid, name: u.displayName || u.email, email: u.email } : null));
+  if (hasFirebase) return fbAuth.onAuthStateChanged(auth, (u) => cb(u && ADMIN_EMAILS.includes(u.email) ? { uid: u.uid, name: u.displayName || u.email, email: u.email } : null));
   return sub(() => cb(demoAdmin()));
 }
 export async function adminSignIn(email, pw) {
   if (hasFirebase) {
     if (auth.currentUser) await fbAuth.signOut(auth);
     const c = await fbAuth.signInWithEmailAndPassword(auth, email, pw);
-    if (c.user.email !== ADMIN_EMAIL) { await fbAuth.signOut(auth); throw new Error('Akun ini bukan akun admin.'); }
+    if (!ADMIN_EMAILS.includes(c.user.email)) { await fbAuth.signOut(auth); throw new Error('Akun ini bukan akun admin.'); }
     return;
   }
-  if (email !== ADMIN_EMAIL || pw !== 'admin123') throw new Error('Email atau kata sandi salah.');
+  if (!ADMIN_EMAILS.includes(email) || pw !== 'admin123') throw new Error('Email atau kata sandi salah.');
   localStorage.setItem('kq2-demo-admin', '1'); store(load());
 }
 export async function adminSignOut() {
