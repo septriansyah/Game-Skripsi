@@ -66,7 +66,7 @@ Aturan di `firestore.rules`:
 ## Admin
 
 Halaman admin tidak ditautkan dari mana pun. Buka langsung `…/#/admin`, lalu masuk dengan akun admin Ngulik
-(`admin@ngulik.app`, UID `nDRmRplyVRUW1gobJlNHEZEpfUW2`, tercatat di `src/lib/db.js` dan `firestore.rules`).
+(`admin@ngulik.app`, tercatat di `src/lib/db.js` dan `firestore.rules`).
 Admin melihat semua guru, semua kode kelas, dan semua kelompok, dan bisa membuka kelas mana pun seperti guru pemiliknya.
 `firestore.rules` dipakai bersama proyek ngulik-react, jadi jaga isinya tetap sama di kedua proyek.
 Di mode demo, kata sandi admin `admin123`.
